@@ -10,5 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CreateBookingRequestDTO {
     private BookingStatus status;
-    private long ticketId;
+    private Long[] ticketIds;
 }

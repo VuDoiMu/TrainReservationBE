@@ -8,10 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CreateBookingRequestGuestDTO {
+public class UpdateBookingRequestDTO {
     private BookingStatus status;
     private Long[] ticketIds;
-    private String guestEmail;
-    private String guestPhone;
-
 }

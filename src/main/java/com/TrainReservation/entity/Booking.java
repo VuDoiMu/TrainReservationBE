@@ -8,6 +8,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Set;
 
 @Entity
 @Setter
@@ -30,21 +31,28 @@ public class Booking {
     @JoinColumn(name = "user_user_id")
     private User user;
 
-    @OneToOne
-    private Ticket ticket;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cart")
+    private Set<Ticket> tickets;
 
     public Booking(BookingStatus status, User user, Ticket ticket) {
         this.status = status;
         this.bookingDate = Timestamp.from(Instant.now());
         this.user = user;
-        this.ticket = ticket;
+        this.tickets = tickets;
     }
 
-    public Booking(Ticket ticket, BookingStatus status, String guestEmail, String guestPhoneNumb) {
+    public Booking(Set<Ticket> tickets, BookingStatus status, String guestEmail, String guestPhoneNumb) {
         this.status = status;
         this.bookingDate =Timestamp.from(Instant.now());
         this.user = new User(guestEmail, guestPhoneNumb);
-        this.ticket = ticket;
+        this.tickets= tickets;
+    }
+
+    public Booking(BookingStatus status, User user, Set<Ticket> tickets){
+        this.status = status;
+        this.bookingDate = Timestamp.from(Instant.now());
+        this.tickets = tickets;
+        this.user = user;
     }
 
 }

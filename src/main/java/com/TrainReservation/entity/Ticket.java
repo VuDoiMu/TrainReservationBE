@@ -1,19 +1,25 @@
 package com.TrainReservation.entity;
 
-import com.TrainReservation.support.DateTime;
+import com.TrainReservation.support.TicketType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
-import java.sql.Date;
-import java.sql.Time;
+import java.time.LocalDateTime;
 
 
 @Entity
 @Table
 @Getter
 @Setter
+@NoArgsConstructor
+@RequiredArgsConstructor
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,16 +42,10 @@ public class Ticket {
 
 
     @Column(name = "departureDate", nullable = false)
-    private Date depatureDate;
-
-    @Column(name = "departureTime", nullable = false)
-    private Time departureTime;
+    private LocalDateTime depatureDate;
 
     @Column(name = "arrivalDate", nullable = false)
-    private Date arrivalDate;
-
-    @Column(name = "arrivalTime", nullable = false)
-    private Time arrivalTime;
+    private LocalDateTime arrivalDate;
 
     @Column(name = "travelDuration", nullable = false)
     private Double travelDuration;
@@ -53,16 +53,11 @@ public class Ticket {
     @Column(name = "isRoundTrip", nullable = false)
     private boolean isRoundTrip;
 
-    public Ticket(Double ticketPrice, Seat seat, String ticketDepature, String ticketDestination, DateTime departure, DateTime arrival, Double travelDuration, boolean isRoundTrip) {
-        this.ticketPrice = ticketPrice;
-        this.seat = seat;
-        this.ticketDepature = ticketDepature;
-        this.ticketDestination = ticketDestination;
-        this.depatureDate = departure.getDate();
-        this.departureTime = departure.getTime();
-        this.arrivalDate = arrival.getDate();
-        this.arrivalTime = arrival.getTime();
-        this.travelDuration = travelDuration;
-        this.isRoundTrip = isRoundTrip;
-    }
+    private TicketType type;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    private Booking booking;
+
 }

@@ -1,5 +1,9 @@
 package com.TrainReservation.service;
 
+import com.TrainReservation.dto.booking.BookingDetailDTO;
+import com.TrainReservation.dto.booking.CreateBookingRequestDTO;
+import com.TrainReservation.dto.booking.CreateBookingRequestGuestDTO;
+import com.TrainReservation.dto.booking.UpdateBookingRequestDTO;
 import com.TrainReservation.entity.Booking;
 import com.TrainReservation.entity.Ticket;
 import com.TrainReservation.entity.User;
@@ -8,12 +12,17 @@ import com.TrainReservation.payload.response.ResponseObject;
 import com.TrainReservation.repository.BookingRepository;
 import com.TrainReservation.repository.TicketRepository;
 import com.TrainReservation.repository.UserRepository;
+import com.TrainReservation.support.BookingStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class BookingService {
@@ -33,7 +42,11 @@ public class BookingService {
     }
 
     //get all booking of an user
-    public ResponseEntity<ResponseObject> findAllBookingByUser(User user){
+    public ResponseEntity<ResponseObject> findAllBookingByUser(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsernameAndDeleted(username, false)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found username: " + username));
         if(!userRepository.existsById(user.getId())){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject("error", "User not found!", ""));
         }
@@ -49,44 +62,68 @@ public class BookingService {
     }
 
     //create booking for logged in user
-    public ResponseEntity<ResponseObject> addBooking(@RequestBody Ticket ticket, @RequestBody User user, @RequestBody boolean isbooked){
-        if(!userRepository.existsById(user.getId())){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject("error", "User not found!", ""));
+    public ResponseEntity<ResponseObject> addBooking(CreateBookingRequestDTO bookingRequestDTO){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsernameAndDeleted(username, false)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found username: " + username));
+
+        Long[] ticketIdList = bookingRequestDTO.getTicketIds();
+        Set<Ticket> tickets = new HashSet<>();
+        for (Long id: ticketIdList){
+                Ticket ticket = ticketRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("There is no ticket with this id: "+ id));
         }
-        if(!ticketRepository.existsById(ticket.getTicketID())){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject("error", "Ticket not found!", ""));
-        }
-        Booking booking = new Booking(isbooked, user, ticket);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseObject("ok", "New booking created!", bookingRepository.save(booking)));
+
+
+        Booking booking = new Booking(bookingRequestDTO.getStatus(), user, tickets);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseObject("ok", "New booking created!", new BookingDetailDTO(bookingRepository.save(booking))));
     }
 
     //create booking for guest
-    public ResponseEntity<ResponseObject> addBookingGuest(@RequestBody Ticket ticket, @RequestBody String guestEmail, @RequestBody String guestPhone, @RequestBody boolean isBooked){
-        if(!ticketRepository.existsById(ticket.getTicketID())){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject("error", "Ticket not found!", ""));
+    public ResponseEntity<ResponseObject> addBookingGuest(CreateBookingRequestGuestDTO bookingRequestGuestDTO){
+
+        User user = new User(bookingRequestGuestDTO.getGuestEmail(), bookingRequestGuestDTO.getGuestPhone());
+
+        Long[] ticketIdList = bookingRequestGuestDTO.getTicketIds();
+        Set<Ticket> tickets = new HashSet<>();
+        for (Long id: ticketIdList){
+            Ticket ticket = ticketRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("There is no ticket with this id: "+ id));
         }
-        Booking booking = new Booking(ticket, isBooked,guestEmail, guestPhone);
+
+        Booking booking = new Booking(bookingRequestGuestDTO.getStatus(), user, tickets);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseObject("ok", "New booking created!", bookingRepository.save(booking)));
     }
 
     //delet booking
-    public ResponseEntity<ResponseObject> removeBooking(@PathVariable long id){
-        if(!bookingRepository.existsById(id)){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject("error", "Booking with id "+ id+ " not found!", ""));
-        }
-        bookingRepository.deleteById(id);
-        return ResponseEntity.ok(new ResponseObject("ok", "Booking deleted!", ""));
+    public ResponseEntity<ResponseObject> removeBooking( long id){
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no booking with this id!"));
+        booking.setStatus(BookingStatus.CANCELED);
+        bookingRepository.save(booking);
+        return ResponseEntity.ok(new ResponseObject("ok", "Booking deleted!", new BookingDetailDTO(booking)));
     }
 
     //update booking
-    public ResponseEntity<ResponseObject> updateBooking(@PathVariable long id, @RequestBody Booking updateBookingDetails){
+    public ResponseEntity<ResponseObject> updateBooking(long id, UpdateBookingRequestDTO updateBookingRequestDTO){
         Booking booking = bookingRepository.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException("Booking with id " +id+" does not exist!"));
-        booking.setBookingDate(updateBookingDetails.getBookingDate());
-        booking.setTicket(updateBookingDetails.getTicket());
-        booking.setBooked(updateBookingDetails.isBooked());
-        booking.setUser(updateBookingDetails.getUser());
-        return ResponseEntity.ok(new ResponseObject("ok", "Booking updated!", bookingRepository.save(booking)));
+
+        Long[] ticketIdList = updateBookingRequestDTO.getTicketIds();
+        Set<Ticket> tickets = new HashSet<>();
+        for (Long ids: ticketIdList){
+            Ticket ticket = ticketRepository.findById(ids)
+                    .orElseThrow(() -> new ResourceNotFoundException("There is no ticket with this id: "+ ids));
+            tickets.add(ticket);
+        }
+
+        booking.setStatus(updateBookingRequestDTO.getStatus());
+        booking.setTickets(tickets);
+
+        bookingRepository.save(booking);
+        return ResponseEntity.ok(new ResponseObject("ok", "Booking updated!", new BookingDetailDTO(booking)));
     }
 
 
