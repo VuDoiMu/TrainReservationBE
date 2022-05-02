@@ -91,9 +91,16 @@ public class BookingService {
         for (Long id: ticketIdList){
             Ticket ticket = ticketRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("There is no ticket with this id: "+ id));
+            tickets.add(ticket);
         }
 
         Booking booking = new Booking(bookingRequestGuestDTO.getStatus(), user, tickets);
+      //  for (Long id: ticketIdList){
+     //       Ticket ticket = ticketRepository.findById(id)
+     //               .orElseThrow(() -> new ResourceNotFoundException("There is no ticket with this id: "+ id));
+     //      ticket.setBooking(booking);
+    //       ticketRepository.save(ticket);
+     //   }
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseObject("ok", "New booking created!", bookingRepository.save(booking)));
     }
 

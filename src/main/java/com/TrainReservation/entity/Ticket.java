@@ -1,10 +1,10 @@
 package com.TrainReservation.entity;
 
+import com.TrainReservation.dto.ticket.TicketRequestDTO;
 import com.TrainReservation.support.TicketType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@RequiredArgsConstructor
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +28,8 @@ public class Ticket {
     @Column(name = "ticketPrice", nullable = false)
     private Double ticketPrice;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "ticket")
+    @JsonIgnore
     private Seat seat;
 
     @Length(min = 3, max = 45)
@@ -60,4 +60,16 @@ public class Ticket {
     @JsonIgnore
     private Booking booking;
 
+    public Ticket(TicketRequestDTO ticketRequestDTO, Seat seat) {
+        this.ticketPrice = ticketRequestDTO.getTicketPrice();
+        this.seat = seat;
+        this.ticketDepature = ticketRequestDTO.getTicketDeparture();
+        this.ticketDestination = ticketRequestDTO.getTicketDestination();
+        this.depatureDate = ticketRequestDTO.getDepartureDate();
+        this.arrivalDate = ticketRequestDTO.getArrivalDate();
+        this.travelDuration = ticketRequestDTO.getTravelDuration();
+        this.isRoundTrip =ticketRequestDTO.isRoundTrip();
+        this.type = ticketRequestDTO.getType();
+        this.booking = null;
+    }
 }

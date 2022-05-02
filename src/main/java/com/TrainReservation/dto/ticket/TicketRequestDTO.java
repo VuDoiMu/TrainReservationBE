@@ -1,13 +1,12 @@
 package com.TrainReservation.dto.ticket;
 
-import com.TrainReservation.entity.Seat;
 import com.TrainReservation.support.TicketType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -17,7 +16,7 @@ public class TicketRequestDTO {
     private Double ticketPrice;
 
     @NotNull
-    private Seat seat;
+    private int seatId;
 
     @NotNull
     private String ticketDeparture;
@@ -26,10 +25,10 @@ public class TicketRequestDTO {
     private String ticketDestination;
 
     @NotNull
-    private LocalDate departureDate;
+    private LocalDateTime departureDate;
 
     @NotNull
-    private LocalDate arrivalDate;
+    private LocalDateTime arrivalDate;
 
     @NotNull
     private Double travelDuration;

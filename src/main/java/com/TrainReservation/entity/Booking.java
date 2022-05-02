@@ -31,7 +31,7 @@ public class Booking {
     @JoinColumn(name = "user_user_id")
     private User user;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "cart")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
     private Set<Ticket> tickets;
 
     public Booking(BookingStatus status, User user, Ticket ticket) {

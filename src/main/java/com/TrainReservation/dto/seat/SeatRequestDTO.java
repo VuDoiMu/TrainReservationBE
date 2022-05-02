@@ -12,4 +12,6 @@ public class SeatRequestDTO {
     private int seatNumber;
 
     private int train;
+
+    private long TicketID;
 }

@@ -1,15 +1,15 @@
 package com.TrainReservation.controller;
 
-import com.TrainReservation.entity.Ticket;
+import com.TrainReservation.dto.ticket.TicketRequestDTO;
 import com.TrainReservation.payload.response.ResponseObject;
 import com.TrainReservation.service.TicketService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/ticket")
 public class TicketController {
 
     private TicketService ticketService;
@@ -19,45 +19,49 @@ public class TicketController {
     //}
 
     //get all ticket
-    @GetMapping(value = "/ticket/")
+    @GetMapping(value = "/all")
     public ResponseEntity<ResponseObject> getAllTicket(){;
         return ticketService.getAllTicket();
     }
 
     //get ticket by id
-    @GetMapping(value = "/ticket/{id}")
+    @GetMapping(value = "/{id}")
     public ResponseEntity<ResponseObject> findTicketById(@PathVariable Long id) {
         return ticketService.findTicketById(id);
     }
 
     //get ticket by seat
-    @GetMapping(value = "/ticket/seat")
+    @GetMapping(value = "/seat/{seatID}")
+    public ResponseEntity<ResponseObject> findTicketBySeat(@PathVariable int seatID){
+        return ticketService.getTicketBySeat(seatID);
+    }
 
     //add ticket
-    @PostMapping(value = "/management/ticket/add")
-    public ResponseEntity<ResponseObject> creatTicket(@RequestBody Ticket ticket) {
+    @PostMapping(value = "/add")
+    //@PreAuthorize("ROLE_ADMIN")
+    public ResponseEntity<ResponseObject> creatTicket(@RequestBody TicketRequestDTO ticket) {
         return ticketService.addTicket(ticket);
     }
 
     //remove ticket by id
-    @DeleteMapping(value = "/management/ticket/remove/{id}")
+    @DeleteMapping(value = "/remove/{id}")
     public ResponseEntity<ResponseObject> removeTicket(@PathVariable Long id) {
         return ticketService.removeTicketById(id);
     }
 
     //update ticket by id
-    @PutMapping(value = "/management/ticket/update/{id}")
-    public ResponseEntity<ResponseObject> updateTicket(@PathVariable Long id, @RequestBody Ticket updatedTicketDetail) {
+    @PutMapping(value = "/update/{id}")
+    public ResponseEntity<ResponseObject> updateTicket(@PathVariable Long id, @RequestBody TicketRequestDTO updatedTicketDetail) {
         return ticketService.updateTicketById(id, updatedTicketDetail);
 
     }
 
     //get searched ticket
-    @GetMapping(value = "/ticket/filter")
+    @GetMapping(value = "/filter")
     public ResponseEntity<ResponseObject> showFilteredTicket(@RequestParam("ticketDestination") String ticketDestination,
                                            @RequestParam("ticketDeparture") String ticketDeparture,
-                                           @RequestParam("depatureDate") Date departureDate,
-                                           @RequestParam("arrivalDate") Date arrivaDate) {
+                                           @RequestParam("depatureDate") LocalDateTime departureDate,
+                                           @RequestParam("arrivalDate") LocalDateTime arrivaDate) {
         return ticketService.findAllByTicketDestinationAndTicketDepatureAndArrivalDateAndDepatureDate(
                 ticketDestination,
                 ticketDeparture,
