@@ -34,12 +34,8 @@ public class Booking {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
     private Set<Ticket> tickets;
 
-    public Booking(BookingStatus status, User user, Ticket ticket) {
-        this.status = status;
-        this.bookingDate = Timestamp.from(Instant.now());
-        this.user = user;
-        this.tickets = tickets;
-    }
+    private Double price;
+
 
     public Booking(Set<Ticket> tickets, BookingStatus status, String guestEmail, String guestPhoneNumb) {
         this.status = status;
@@ -53,6 +49,11 @@ public class Booking {
         this.bookingDate = Timestamp.from(Instant.now());
         this.tickets = tickets;
         this.user = user;
+        double price = 0;
+        for(Ticket ticket: tickets){
+            price = price + ticket.getTicketPrice();
+        }
+        this.price=price;
     }
 
 }

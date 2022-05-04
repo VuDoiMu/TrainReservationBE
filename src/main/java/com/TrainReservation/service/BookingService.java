@@ -21,7 +21,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -131,6 +134,25 @@ public class BookingService {
 
         bookingRepository.save(booking);
         return ResponseEntity.ok(new ResponseObject("ok", "Booking updated!", new BookingDetailDTO(booking)));
+    }
+
+    public ResponseEntity<ResponseObject> getAllRevenue(){
+        List<Booking> allBooking = bookingRepository.findAll();
+        double revenue = 0;
+        for (Booking booking: allBooking){
+            revenue = revenue+ booking.getPrice();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("ok", "Getting all time revenue!", revenue));
+    }
+
+    public ResponseEntity<ResponseObject> getPartialRevenue(LocalDateTime start, LocalDateTime end){
+        List<Booking> allBooking = bookingRepository.findAll();
+        double revenue = 0;
+        for (Booking booking: allBooking){
+            if (booking.getBookingDate().before(Timestamp.valueOf(end)) && booking.getBookingDate().after(Timestamp.valueOf(start)))
+            revenue = revenue+ booking.getPrice();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("ok", "Getting all time revenue!", revenue));
     }
 
 

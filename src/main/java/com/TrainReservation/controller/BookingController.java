@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 @RestController(value = "/ap1/v1/booking")
 public class BookingController {
 
@@ -57,5 +59,14 @@ public class BookingController {
         return bookingService.removeBooking(id);
     }
 
+    @GetMapping("/management/allrevenue")
+    public ResponseEntity<ResponseObject> getAllRevenue(){
+        return bookingService.getAllRevenue();
+    }
+
+    @GetMapping("/management/partialrevenue")
+    public ResponseEntity<ResponseObject> getPartialRevenue(@RequestParam LocalDateTime start, @RequestParam LocalDateTime end){
+        return bookingService.getPartialRevenue(start, end);
+    }
 
 }
