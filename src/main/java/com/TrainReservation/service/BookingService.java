@@ -152,7 +152,7 @@ public class BookingService {
             if (booking.getBookingDate().before(Timestamp.valueOf(end)) && booking.getBookingDate().after(Timestamp.valueOf(start)))
             revenue = revenue+ booking.getPrice();
         }
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("ok", "Getting all time revenue!", revenue));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("ok", "Getting partial revenue!", revenue));
     }
 
 
